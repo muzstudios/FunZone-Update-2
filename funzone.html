@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFO AI-FunZone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #000000, #4b0000);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: #ff5050;
+            animation: bounce 2s infinite;
+            margin-top: 20px;
+        }
+
+        .update-log {
+            background-color: #222;
+            color: #ff5050;
+            padding: 10px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 80, 80, 0.5);
+            margin-top: 20px;
+        }
+
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            background-color: #111;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .user-msg, .bot-msg {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .user-msg {
+            background-color: #4a4;
+            text-align: right;
+        }
+
+        .bot-msg {
+            background-color: #333;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: white;
+        }
+
+        .send-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff5050;
+            color: white;
+            cursor: pointer;
+        }
+
+        .send-btn:hover {
+            background-color: #e03e3e;
+        }
+
+        .toggle-sound-btn, .help-btn {
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #ff5050;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toggle-sound-btn:hover, .help-btn:hover {
+            background-color: #e03e3e;
+        }
+
+        .help-section {
+            margin-top: 20px;
+            background-color: #444;
+            padding: 15px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            color: white;
+            display: none; /* Yardım kısmı başlangıçta gizli */
+            position: relative;
+        }
+
+        .help-section h3 {
+            margin-bottom: 10px;
+            color: #ff5050;
+        }
+
+        .help-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .help-list li {
+            padding: 5px;
+            border-bottom: 1px solid #666;
+        }
+
+        .help-list li:last-child {
+            border-bottom: none;
+        }
+
+        .arrow {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #ff5050;
+            opacity: 0;
+            animation: slideInArrow 1s forwards;
+        }
+
+        @keyframes slideInArrow {
+            0% {
+                top: -40px;
+                opacity: 0;
+            }
+            100% {
+                top: -10px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Yönetim paneli */
+        .admin-panel {
+            display: none;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .admin-panel h3 {
+            color: #ff5050;
+        }
+
+        .admin-panel ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .admin-panel ul li {
+            padding: 10px;
+            border-bottom: 1px solid #666;
+        }
+
+        .admin-panel ul li:last-child {
+            border-bottom: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="logo">🚀 WiFO AI-FunZone 🎮</div>
+
+    <!-- Update Log -->
+    <div class="update-log">
+        <strong>Update Log:</strong><br>
+        + Mobil uyumluluk eklendi 📱<br>
+        + AI otomatik yanıtlar geliştirilmiş 🧠<br>
+        + Veritabanı kaydı (localStorage) eklendi 💾<br>
+        + Şaka ve emoji eklemeleri artırıldı 😂😊
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Bir şeyler yazın..." onkeydown="if(event.key === 'Enter'){sendMessage()}">
+        <button class="send-btn" onclick="sendMessage()">Gönder</button>
+
+        <!-- Sound Toggle Button -->
+        <button class="toggle-sound-btn" onclick="toggleSound()">Sesli Yanıtı { {soundStatus ? 'Kapat' : 'Aç'} }</button>
+
+        <!-- Help Button -->
+        <button class="help-btn" onclick="toggleHelp()">Yardım</button>
+    </div>
+
+    <!-- Help Section -->
+    <div class="help-section" id="help-section">
+        <div class="arrow"></div>
+        <h3>Yardım</h3>
+        <div>
+            <h4>Türkçe</h4>
+            <ul class="help-list">
+                <li>Merhaba</li>
+                <li>Selam</li>
+                <li>İyi akşamlar</li>
+                <li>İyi günler</li>
+                <li>Nasılsın?</li>
+                <li>Teşekkür ederim</li>
+                <li>Rica ederim</li>
+                <li>Hoşça kal</li>
+                <li>Şaka yap</li>
+                <li>Film tavsiye et</li>
+                <li>Adın ne?</li>
+                <li>Favori filmin ne?</li>
+                <li>Ruh halin ne?</li>
+                <li>Ne yapıyorsun?</li>
+                <li>İyi misin?</li>
+                <li>Hangi takımı tutuyorsun?</li>
+                <li>Bir şeyler söyle</li>
+                <li>Yardım et</li>
+                <li>Güle güle</li>
+                <li>Yarını merak ediyorum</li>
+            </ul>
+
+            <h4>English</h4>
+            <ul class="help-list">
+                <li>Hello</li>
+                <li>Good evening</li>
+                <li>Good afternoon</li>
+                <li>How are you?</li>
+                <li>Thank you</li>
+                <li>You're welcome</li>
+                <li>Goodbye</li>
+                <li>Tell me a joke</li>
+                <li>Suggest a movie</li>
+                <li>What’s your name?</li>
+                <li>What’s your favorite movie?</li>
+                <li>How’s your mood?</li>
+                <li>What are you doing?</li>
+                <li>Are you okay?</li>
+                <li>Which team do you support?</li>
+                <li>Say something</li>
+                <li>Help me</li>
+                <li>Goodbye</li>
+                <li>I'm curious about tomorrow</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="admin-panel">
+        <h3>Yönetim Paneli</h3>
+        <ul>
+            <li><strong>Bot Durumu:</strong> <span id="bot-status">Aktif</span></li>
+            <li><strong>Bot Kodu:</strong> WiFO Bot - AI</li>
+            <li><button onclick="toggleBotStatus()">Botu Kapat / Aç</button></li>
+            <li><strong>Bot Üreticisi:</strong> WiFO AI - FE Kurucu Konseyi</li>
+            <li><button onclick="logout()">Çıkış Yap</button></li>
+        </ul>
+    </div>
+
+    <script>
+        let userName = localStorage.getItem('userName') || '';
+        const chatBox = document.getElementById('chat-box');
+        let autoReadEnabled = true;  // Sesli yanıt durumu
+        let soundStatus = true;  // Sesli yanıt durumu
+        let botStatus = true; // Bot aktif durumu
+
+        const jokes = [
+            "Matematik kitabı neden üzgündü? Çünkü çok problemi vardı! 😂",
+            "Neden bilgisayarlar hiç şaka yapmaz? Çünkü çok ciddiler! 😁",
+            "Why don’t scientists trust atoms? Because they make up everything! 🤓",
+            "Why did the scarecrow win an award? Because he was outstanding in his field! 🌾"
+        ];
+
+        const abbreviations = {
+            "SA": "Selamün Aleyküm",
+            "KB": "Kusura Bakma",
+            "H.G": "Hoşgeldin",
+            "H.B": "Hoşbulduk",
+            "H.O": "Hayırlı Olsun",
+            "Evet": "Evet, tabii!",
+            "Hayır": "Hayır, teşekkür ederim!"
+        };
+
+        const validResponses = [
+            "merhaba", "selam", "günaydın", "nasılsın", "şaka yap", "film tavsiye et", "adın ne?", "ruh halin ne?",
+            "hoşça kal", "ne yapıyorsun?", "iyi akşamlar", "hoşgeldin", "selamünaleyküm", "kusura bakma", "yardım et",
+            "benim adım", "favori filmin ne?", "hangi takımı tutuyorsun?", "film öner", "bana bir şaka yap", "iyi misin?"
+        ];
+
+        function saveMessageToStorage(userName, message) {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            chatHistory.push({ userName, message });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        function typeWriterEffect(element, text, index = 0) {
+            if (index < text.length) {
+                element.innerHTML += text.charAt(index);
+                setTimeout(function() {
+                    typeWriterEffect(element, text, index + 1);
+                }, 50); // Yazma hızı
+            } else {
+                if (soundStatus) {
+                    const msg = new SpeechSynthesisUtterance(text);
+                    window.speechSynthesis.speak(msg);
+                }
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("user-input");
+            const text = input.value.trim();
+            if (!text) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.classList.add('user-msg');
+            userMsg.textContent = text;
+            chatBox.appendChild(userMsg);
+
+            let reply = "";
+            const lower = text.toLowerCase();
+
+            // Kısaltmalar ekleme
+            if (abbreviations[lower]) {
+                reply = abbreviations[lower];
+            } else if (validResponses.includes(lower)) {
+                switch(lower) {
+                    case "merhaba":
+                    case "selam":
+                        reply = "Merhaba! Nasılsın? 👋";
+                        break;
+                    case "günaydın":
+                        reply = "Günaydın! Bugün harika bir gün olacak! 🌞";
+                        break;
+                    case "nasılsın":
+                        reply = "İyiyim, teşekkür ederim! Sen nasılsın? 😊";
+                        break;
+                    case "şaka yap":
+                        reply = jokes[Math.floor(Math.random() * jokes.length)];
+                        break;
+                    case "film tavsiye et":
+                        reply = "Bugün 'Inception'ı izleyebilirsin, harika bir film! 🎥";
+                        break;
+                    case "adın ne?":
+                        reply = userName ? `Benim adım WiFO. Senin adın ne?` : `Benim adım WiFO. Senin adın ne?`;
+                        break;
+                    case "ruh halin ne?":
+                        reply = "Benim ruh halim çok iyi! Senin? 😊";
+                        break;
+                    default:
+                        reply = "Bunu tam anlayamadım, başka bir şey deneyin!";
+                        break;
+                }
+            } else {
+                reply = "Bunu tam anlayamadım, başka bir şey denemek ister misin? 🤔";
+            }
+
+            const botMsg = document.createElement('div');
+            botMsg.classList.add('bot-msg');
+            chatBox.appendChild(botMsg);
+
+            // Yavaş yazma efekti
+            typeWriterEffect(botMsg, reply);
+
+            saveMessageToStorage(userName, reply);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = '';
+        }
+
+        function toggleSound() {
+            soundStatus = !soundStatus;
+            document.querySelector('.toggle-sound-btn').textContent = `Sesli Yanıtı ${soundStatus ? 'Kapat' : 'Aç'}`;
+        }
+
+        function toggleHelp() {
+            const helpSection = document.getElementById('help-section');
+            helpSection.style.display = helpSection.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Yönetim panelini toggle et
+        function toggleAdminPanel() {
+            const adminPanel = document.getElementById('admin-panel');
+            adminPanel.style.display = adminPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Bot durumunu aç/kapat
+        function toggleBotStatus() {
+            botStatus = !botStatus;
+            document.getElementById("bot-status").textContent = botStatus ? "Aktif" : "Pasif";
+        }
+
+        function logout() {
+            // Çıkış yapma işlemi
+            alert("Çıkış yapıldı.");
+            window.location.reload();
+        }
+
+        // 'krc' yazılınca Yönetim Paneli açma
+        document.getElementById('user-input').addEventListener('keyup', function (event) {
+            if (event.target.value.toLowerCase() === 'krc') {
+                toggleAdminPanel();
+            }
+        });
+    </script>
+
+</body>
+</html>
